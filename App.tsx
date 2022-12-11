@@ -28,6 +28,7 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import {MainStack} from './app/navigations/MainStack';
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -43,7 +44,7 @@ const App = () => {
         backgroundColor={backgroundStyle.backgroundColor}
       />
 
-      {/* <MainStack /> */}
+      <MainStack />
     </SafeAreaProvider>
   );
 };

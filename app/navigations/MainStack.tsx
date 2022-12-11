@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-
-import {colorTheme} from '../styles/theme.styles';
+import {colorTheme} from '../config/theme';
+import HomeView from '../screens/Home/HomeView';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,10 +28,10 @@ export const MainStack = () => {
           name="HomeView"
           component={HomeView}
           options={{
-            title: 'Sessions',
+            title: 'Tickets',
             headerShown: true,
             headerStyle: {
-              backgroundColor: colorTheme.freshMile,
+              backgroundColor: colorTheme.main,
             },
             headerTintColor: '#fff',
             headerTitleStyle: {
