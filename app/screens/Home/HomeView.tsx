@@ -2,10 +2,11 @@ import {
   NavigationProp,
   ParamListBase,
   RouteProp,
+  useNavigation,
 } from '@react-navigation/native';
 import moment from 'moment';
 
-import React, {FC, ReactElement} from 'react';
+import React, {FC, ReactElement, useEffect} from 'react';
 import {
   Dimensions,
   FlatList,
@@ -15,22 +16,50 @@ import {
   View,
 } from 'react-native';
 import {Avatar} from 'react-native-paper';
+import RowListItem from '../../components/RowListItem';
 import {colorTheme} from '../../config/theme';
+import {IconButton, Button} from 'react-native-paper';
 
 type ChildProps = {
   navigation: NavigationProp<ParamListBase>;
   route: RouteProp<ParamListBase>;
 };
 
-const HomeView: FC<ChildProps> = (
-  {
-    /* destructured props */
-  },
-): ReactElement => {
-  const marginHorizontal = 4;
-  const cols = 3;
-  const width =
-    Dimensions.get('window').width / cols - marginHorizontal * (cols + 1);
+const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
+  React.useEffect(() => {
+    navigation.setOptions({
+      headerRight: props => <AddIssue {...props} />,
+      headerLeft: props => <FilterIssue {...props} />,
+    });
+  }, [navigation]);
+
+  const FilterIssue = () => {
+    return (
+      <View style={{}}>
+        <IconButton
+          icon="menu"
+          iconColor={colorTheme.greyLight}
+          //iconColor={MD3Colors.error50}
+          size={20}
+          onPress={() => console.log('Pressed')}
+        />
+      </View>
+    );
+  };
+
+  const AddIssue = () => {
+    return (
+      <View style={{}}>
+        <IconButton
+          icon="plus-circle"
+          iconColor={colorTheme.greyLight}
+          //iconColor={MD3Colors.error50}
+          size={20}
+          onPress={() => console.log('Pressed')}
+        />
+      </View>
+    );
+  };
 
   const HeaderTab = () => {
     return (
@@ -63,87 +92,13 @@ const HomeView: FC<ChildProps> = (
       </View>
     );
   };
-  const Row = () => {
-    return (
-      <View
-        style={{
-          backgroundColor: colorTheme.greyLight,
-          flexDirection: 'row',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          marginTop: 10,
-        }}>
-        {/* date */}
-        <View style={{padding: 4, width: 100}}>
-          <Text style={{fontSize: 14, fontWeight: '300'}}>
-            {moment().format('L')}
-          </Text>
-        </View>
-        {/* Type */}
-        <View style={[styles.headRow, {alignItems: 'center', width: 80}]}>
-          <View
-            style={{
-              height: 20,
-              width: 20,
-              backgroundColor: '#78909c',
-              borderRadius: 10,
-            }}
-          />
-        </View>
-        {/* Priority */}
-        <View style={[styles.headRow, {alignItems: 'center', width: 80}]}>
-          <View
-            style={{
-              height: 20,
-              width: 20,
-              backgroundColor: '#558b2f',
-              borderRadius: 10,
-            }}
-          />
-        </View>
-        {/* Issue */}
-        <View style={{flex: 2, width: 250}}>
-          <TouchableOpacity style={{flexDirection: 'row'}}>
-            <Text
-              style={{
-                fontSize: 14,
-                color: colorTheme.regularBlue,
-                fontWeight: '600',
-              }}>
-              #34{' '}
-            </Text>
-            <Text numberOfLines={2} style={{fontSize: 12}}>
-              Bug lorsqu'on clique sur le bouton participer à un évenement Bug
-            </Text>
-          </TouchableOpacity>
-        </View>
-        {/* Status */}
-        <View style={{width: 80, padding: 4}}>
-          <Text style={{fontSize: 12}}>Status</Text>
-        </View>
-        {/* Assign to */}
-        <View style={{width: 80, padding: 4, alignItems: 'center'}}>
-          <Avatar.Image size={48} />
-        </View>
-      </View>
-    );
+
+  const renderItem = ({item}) => {
+    return <RowListItem />;
   };
-
-  const Item = ({title}) => (
-    <View style={styles.item}>
-      <Text style={styles.title}>{title}</Text>
-    </View>
-  );
-
-  const renderItem = ({item}) => <Row />;
 
   return (
     <View style={styles.container}>
-      {/*  <View style={{}}>
-        <Text style={{fontSize: 12}}>Home view</Text>
-      </View> */}
-      {/* Issue  List */}
-
       <FlatList
         horizontal
         data={[0, 1, 2, 3, 4, 5]}
