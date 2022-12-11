@@ -25,6 +25,11 @@ type ChildProps = {
   route: RouteProp<ParamListBase>;
 };
 
+/**
+ * HomeView
+ * List All Issues
+ *
+ */
 const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
   React.useEffect(() => {
     navigation.setOptions({
@@ -35,11 +40,10 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
 
   const FilterIssue = () => {
     return (
-      <View style={{}}>
+      <View>
         <IconButton
-          icon="menu"
+          icon="tune"
           iconColor={colorTheme.greyLight}
-          //iconColor={MD3Colors.error50}
           size={20}
           onPress={() => console.log('Pressed')}
         />
@@ -49,13 +53,12 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
 
   const AddIssue = () => {
     return (
-      <View style={{}}>
+      <View>
         <IconButton
           icon="plus-circle"
           iconColor={colorTheme.greyLight}
-          //iconColor={MD3Colors.error50}
           size={20}
-          onPress={() => console.log('Pressed')}
+          onPress={() => navigation.navigate('AddIssueView')}
         />
       </View>
     );

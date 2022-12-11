@@ -1,8 +1,11 @@
 import * as React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {colorTheme} from '../config/theme';
 import HomeView from '../screens/Home/HomeView';
+import AddIssueView from '../screens/AddIssueView';
+import {IconButton} from 'react-native-paper';
+import {View} from 'react-native';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,10 +20,6 @@ const config = {
 export const navigationRef = React.createRef();
 
 export const MainStack = () => {
-  //const {theme} = useTheme();
-
-  //const {isReady, isConnected} = useAPI();
-
   return (
     <NavigationContainer ref={navigationRef} /* theme={theme} */>
       <Stack.Navigator initialRouteName={'Home'}>
@@ -39,26 +38,37 @@ export const MainStack = () => {
             },
           }}
         />
-        {/* <Stack.Screen
-          name="DetailsTab"
-          component={DetailsTab}
-          options={{
-            title: 'Details',
-            headerShown: true,
-            headerBackTitle: '',
-            header: ({navigation}) => <HeaderDetail navigation={navigation} />,
-          }}
-        />
         <Stack.Screen
-          name="DetailSessionView"
-          component={DetailSessionView}
-          options={{
-            title: 'Details',
+          name="AddIssueView"
+          component={AddIssueView}
+          options={({navigation}) => ({
+            title: 'Tickets',
             headerShown: true,
             headerBackTitle: '',
-            header: ({navigation}) => <HeaderDetail navigation={navigation} />,
-          }}
-        /> */}
+            headerLeft: props => {
+              return (
+                <View>
+                  <IconButton
+                    {...props}
+                    icon="arrow-left"
+                    iconColor={colorTheme.greyLight}
+                    size={20}
+                    onPress={() => {
+                      navigation.goBack();
+                    }}
+                  />
+                </View>
+              );
+            },
+            headerStyle: {
+              backgroundColor: colorTheme.main,
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+          })}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
