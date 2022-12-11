@@ -1,32 +1,32 @@
-import React, { FC, ReactElement } from 'react';
-import {View} from 'react-native';
-import PropTypes from 'prop-types';
+import React, {FC, ReactElement} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
 
-
-type ChildProps = {
-  //define props
+/* type ChildProps = {
   navigation: NavigationProp<ParamListBase>;
   route: RouteProp<ParamListBase>;
-};
-const HomeView: FC<ChildProps> = ({/* destructured props */}): ReactElement => {
- return (
- <view style={styles.container}>
- {/* Add you elements */}
- </View>
- );
+}; */
+
+type ChildProps = {};
+const HomeView: FC<ChildProps> = (
+  {
+    /* destructured props */
+  },
+): ReactElement => {
+  return (
+    <View style={styles.container}>
+      <View style={{}}>
+        <Text style={{fontSize: 12}}>Home view</Text>
+      </View>
+    </View>
+  );
 };
 
-HomeView.propTypes = {};
 HomeView.defaultProps = {};
 export default HomeView;
 
-
-
-
-
 const styles = StyleSheet.create({
   container: {
-        flex:1,
-        backgroundColor:'#FFF'
-       }
-   })
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
+});
