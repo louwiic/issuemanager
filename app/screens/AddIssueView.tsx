@@ -18,6 +18,7 @@ import MyBottomSheet from '../components/MyBottomSheet';
 import {Controller, Resolver, useForm} from 'react-hook-form';
 import ModalPicker from '../components/ModalPicker';
 import {Issue} from '../type/IssueType';
+import {priorityTypeLabel, statusTypeLabel} from '../helpers/helpers';
 
 const PickerComponent = ({type, selected, items}) => {
   return (
@@ -132,8 +133,14 @@ const AddIssueView: FC<IssueProps> = ({}): ReactElement => {
       setTitle(
         issue.ref ? 'Modifier le demande ' + issue?.ref : 'Modifier le demande',
       );
-      setValue('status', {label: issue.status, value: issue.status});
-      setValue('priority', {label: issue.priority, value: issue.priority});
+      setValue('status', {
+        label: statusTypeLabel(issue.status),
+        value: issue.status,
+      });
+      setValue('priority', {
+        label: priorityTypeLabel(issue.priority),
+        value: issue.priority,
+      });
       setValue('description', issue.request);
     }
   }, [issue]);

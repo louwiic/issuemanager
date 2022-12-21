@@ -70,3 +70,14 @@ export const statusTypeLabel = (status: string): String => {
       return 'Terminé';
   }
 };
+
+export const priorityTypeLabel = (status: string): String => {
+  switch (status) {
+    case 'normal':
+      return 'Normal';
+    case 'higth':
+      return 'Elevé';
+    case 'emergency':
+      return 'Urgent';
+  }
+};
