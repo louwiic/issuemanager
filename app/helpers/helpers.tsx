@@ -18,15 +18,12 @@ export const statusColor = (status: string): ReactElement => {
   switch (status) {
     case 'new':
       return <View style={{...style, backgroundColor: colorTheme.new}} />;
-
     case 'inprogress':
       return (
         <View style={{...style, backgroundColor: colorTheme.inprogress}} />
       );
-
     case 'done':
       return <View style={{...style, backgroundColor: colorTheme.done}} />;
-
     default:
       <View style={{}}>{/* Element */}</View>;
       break;
@@ -60,5 +57,16 @@ export const priorityType = (status: string): ReactElement => {
     default:
       <View style={{}}>{/* Element */}</View>;
       break;
+  }
+};
+
+export const statusTypeLabel = (status: string): String => {
+  switch (status) {
+    case 'new':
+      return 'Nouveau';
+    case 'inprogress':
+      return 'En cours';
+    case 'done':
+      return 'Terminé';
   }
 };

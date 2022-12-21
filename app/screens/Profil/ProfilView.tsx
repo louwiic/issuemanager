@@ -15,7 +15,8 @@ import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import moment from 'moment';
 import colorTheme from '../../config/theme';
 import {ActivityIndicator} from 'react-native-paper';
-import {statusColor} from '../../helpers/helpers';
+import {statusColor, statusTypeLabel} from '../../helpers/helpers';
+import {Issue} from '../../type/IssueType';
 
 type ChildProps = {
   //define props
@@ -29,9 +30,7 @@ interface UserContextProps {
 }
 
 const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
-  const [userIssuesList, setUserIssuesList] = useState<
-    FirebaseFirestoreTypes.FieldValue[]
-  >([]);
+  const [userIssuesList, setUserIssuesList] = useState<Issue[]>([]);
   const {user, setUser} = useContext<UserContextProps>(UserContext);
   const [loading, setLoading] = useState<Boolean>(false);
   const collectionRef = firestore().collection('issues');
@@ -178,7 +177,7 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
                 <View style={styles.statusContainer}>
                   {statusColor(item?.status)}
                   <Text style={{paddingLeft: 5, fontWeight: 'bold'}}>
-                    {item.status}
+                    {statusTypeLabel(item.status)}
                   </Text>
                   <View style={styles.dateContainer}>
                     <Text>{isssueDate}</Text>

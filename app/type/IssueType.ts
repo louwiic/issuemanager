@@ -1,4 +1,5 @@
 export type Issue = {
+    id:string;
     assignTo: string;
     author: string;
     date: Date;

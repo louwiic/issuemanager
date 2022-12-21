@@ -67,12 +67,10 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
    */
   useEffect(() => {
     const subscriber = () => {
-      const queryStatEmergency = issuesQuery.where(
-        'priority',
-        '==',
-        'emergency',
-      );
-      queryStatEmergency.get().then(querySnapshot => {
+      const docRef = firestore().collection('issues');
+
+      const queryStatEmergency = docRef.where('priority', '==', 'emergency');
+      queryStatEmergency.onSnapshot(querySnapshot => {
         const issues = [];
         querySnapshot.forEach(documentSnapshot => {
           issues.push(documentSnapshot.data());
@@ -80,9 +78,10 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
         const priorityHigthCount = issues.length;
         setNumberIssueHigthPrio(priorityHigthCount);
       });
+
       /* query new issue */
-      const queryStatNew = issuesQuery.where('status', '==', 'new');
-      queryStatNew.get().then(querySnapshot => {
+      const queryStatNew = docRef.where('status', '==', 'new');
+      queryStatNew.onSnapshot(querySnapshot => {
         const newIssues = [];
         querySnapshot.forEach(documentSnapshot => {
           newIssues.push(documentSnapshot.data());
@@ -90,9 +89,10 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
         const newIssuesCount = newIssues.length;
         setNumberNewIssues(newIssuesCount);
       });
-      /* query new issue */
-      const queryStatDone = issuesQuery.where('status', '==', 'done');
-      queryStatDone.get().then(querySnapshot => {
+
+      /* query done issue */
+      const queryStatDone = docRef.where('status', '==', 'done');
+      queryStatDone.onSnapshot(querySnapshot => {
         const issuesDone = [];
         querySnapshot.forEach(documentSnapshot => {
           issuesDone.push(documentSnapshot.data());
@@ -113,8 +113,9 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
   }, []);
 
   const loadIssues = () => {
-    const subscriber = issuesQuery
-      .orderBy('date', 'desc')
+    const docRef = firestore().collection('issues');
+    const subscriber = docRef
+      //.orderBy('date', 'desc')
       //.limit(4)
       .onSnapshot(querySnapshot => {
         const issues = [];
@@ -175,7 +176,6 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
 
   const renderItem = ({item}) => {
     const ref = item.key?.slice(0, 3);
-
     return <RowListItem key={ref} issue={item} />;
   };
 
