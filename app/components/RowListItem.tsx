@@ -8,17 +8,31 @@ import {
 } from '@react-navigation/native';
 import moment from 'moment';
 import {Avatar} from 'react-native-paper';
-import {colorTheme} from '../config/theme';
+import colorTheme from '../config/theme';
+import firebase from '@react-native-firebase/app';
+import {priorityType, statusColor, typeColor} from '../helpers/helpers';
+interface Issue {
+  request: string;
+  status: string;
+  type: string;
+  assignTo: string;
+  author: string;
+  date: {
+    nanoseconds: Number;
+    seconds: Number;
+  };
+  priority: string;
+}
+
 type ChildProps = {
-  //define props
   navigation?: NavigationProp<ParamListBase>;
   route?: RouteProp<ParamListBase>;
+  issue?: Issue;
 };
-const RowListItem: FC<ChildProps> = (
-  {
-    /* destructured props */
-  },
-): ReactElement => {
+const RowListItem: FC<ChildProps> = ({issue}): ReactElement => {
+  const t = issue?.date;
+  const isssueDate = moment(t?.toDate?.()).format('L à HH:mm');
+  const assignTo = issue?.userAssigned?.nickname;
   return (
     <View
       style={{
@@ -30,31 +44,15 @@ const RowListItem: FC<ChildProps> = (
       }}>
       {/* date */}
       <View style={{padding: 4, width: 100}}>
-        <Text style={{fontSize: 14, fontWeight: '300'}}>
-          {moment().format('L')}
-        </Text>
+        <Text style={{fontSize: 14, fontWeight: '300'}}>{isssueDate}</Text>
       </View>
       {/* Type */}
       <View style={[styles.headRow, {alignItems: 'center', width: 80}]}>
-        <View
-          style={{
-            height: 20,
-            width: 20,
-            backgroundColor: '#78909c',
-            borderRadius: 10,
-          }}
-        />
+        {typeColor(issue?.type)}
       </View>
       {/* Priority */}
       <View style={[styles.headRow, {alignItems: 'center', width: 80}]}>
-        <View
-          style={{
-            height: 20,
-            width: 20,
-            backgroundColor: '#558b2f',
-            borderRadius: 10,
-          }}
-        />
+        <Text style={{fontSize: 12}}>{priorityType(issue?.priority)}</Text>
       </View>
       {/* Issue */}
       <View style={{flex: 2, width: 250}}>
@@ -65,20 +63,20 @@ const RowListItem: FC<ChildProps> = (
               color: colorTheme.regularBlue,
               fontWeight: '600',
             }}>
-            Ref : #34{' '}
+            Ref : #{issue.key?.slice(0, 3)}{' '}
           </Text>
           <Text numberOfLines={2} style={{fontSize: 12}}>
-            Bug lorsqu'on clique sur le bouton participer à un évenement Bug
+            {issue?.request}
           </Text>
         </TouchableOpacity>
       </View>
       {/* Status */}
       <View style={{width: 80, padding: 4}}>
-        <Text style={{fontSize: 12}}>En cours</Text>
+        <Text style={{fontSize: 12}}>{statusColor(issue?.status)}</Text>
       </View>
       {/* Assign to */}
       <View style={{width: 80, padding: 4, alignItems: 'center'}}>
-        <Avatar.Image size={48} />
+        <Text style={{fontWeight: '400'}}>{assignTo}</Text>
       </View>
     </View>
   );

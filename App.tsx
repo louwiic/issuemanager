@@ -8,8 +8,9 @@
  * @format
  */
 
-import React, {type PropsWithChildren} from 'react';
+import React, {useState, type PropsWithChildren} from 'react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {DefaultTheme, Provider as PaperProvider} from 'react-native-paper';
 
 import {
   SafeAreaView,
@@ -29,6 +30,9 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import {MainStack} from './app/navigations/MainStack';
+import colorTheme from './app/config/theme';
+import auth from '@react-native-firebase/auth';
+import {UserProvider} from './app/context/UserContext';
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -37,14 +41,27 @@ const App = () => {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  const theme = {
+    ...DefaultTheme,
+
+    colors: {
+      ...DefaultTheme.colors,
+      primary: colorTheme.main,
+      background: 'white',
+    },
+  };
+
   return (
     <SafeAreaProvider style={{flex: 1}}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-
-      <MainStack />
+      <PaperProvider theme={theme}>
+        <UserProvider>
+          <StatusBar
+            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+            backgroundColor={backgroundStyle.backgroundColor}
+          />
+          <MainStack />
+        </UserProvider>
+      </PaperProvider>
     </SafeAreaProvider>
   );
 };
