@@ -35,6 +35,7 @@ import {UserContext} from '../../context/UserContext';
 import {Icon} from 'react-native-paper/lib/typescript/components/Avatar/Avatar';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Stats from '../../components/Stats';
+import {Issue} from '../../type/IssueType';
 
 type ChildProps = {
   navigation: NavigationProp<ParamListBase>;
@@ -52,7 +53,7 @@ interface UserContextProps {
  *
  */
 const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
-  const [issuesList, setIssuesList] = useState([]);
+  const [issuesList, setIssuesList] = useState<Issue[]>([]);
   const {user} = useContext<UserContextProps>(UserContext);
   const [loading, setLoading] = useState<Boolean>(false);
   const [numberIssueHigthPrio, setNumberIssueHigthPrio] = useState<Number>(0);
@@ -69,7 +70,7 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
     const subscriber = () => {
       const docRef = firestore().collection('issues');
 
-      const queryStatEmergency = docRef.where('priority', '==', 'emergency');
+      const queryStatEmergency = docRef.where('priority', '==', 'higth');
       queryStatEmergency.onSnapshot(querySnapshot => {
         const issues = [];
         querySnapshot.forEach(documentSnapshot => {
@@ -227,7 +228,7 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
             />
             <IconButton
               icon="magnify"
-              color="#009688"
+              iconColor={colorTheme.inprogress}
               size={30}
               onPress={handleSearch}
             />

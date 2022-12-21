@@ -173,6 +173,8 @@ const AddIssueView: FC<IssueProps> = ({}): ReactElement => {
             'users',
             userFormatted.filter(u => u.value === issue.assignTo.id)?.[0],
           );
+        } else {
+          setValue('users', userFormatted?.[0]);
         }
         setUserList(userFormatted);
 
@@ -348,6 +350,7 @@ const AddIssueView: FC<IssueProps> = ({}): ReactElement => {
                 value={value}
                 multiline
                 numberOfLines={4}
+                returnKeyType="search"
                 style={{
                   height: 100,
                   marginTop: 10,
@@ -374,12 +377,12 @@ const AddIssueView: FC<IssueProps> = ({}): ReactElement => {
               value={userValue?.label}
               onPressIn={() => setModalVisible3(true)}
             />
+            {errors.users && (
+              <HelperText type="error" visible={errors.users}>
+                {errors.users?.message}
+              </HelperText>
+            )}
           </View>
-          {errors.users && (
-            <HelperText type="error" visible={errors.users}>
-              {errors.users?.message}
-            </HelperText>
-          )}
           <ModalPicker
             modalVisible={modalVisible3}
             setModalVisible={setModalVisible3}>

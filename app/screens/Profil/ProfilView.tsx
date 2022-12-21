@@ -5,7 +5,14 @@ import {
   useIsFocused,
 } from '@react-navigation/native';
 import React, {FC, ReactElement, useContext, useEffect, useState} from 'react';
-import {Dimensions, FlatList, StyleSheet, Text, View} from 'react-native';
+import {
+  Alert,
+  Dimensions,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import firestore, {
   FirebaseFirestoreTypes,
@@ -35,6 +42,7 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
   const [loading, setLoading] = useState<Boolean>(false);
   const collectionRef = firestore().collection('issues');
   const [userInfos, setUserInfos] = useState(null);
+  const [filter, setFilter] = useState<string>('assignMe');
 
   useEffect(() => {
     if (user) {
@@ -45,7 +53,6 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
 
   const loadUserProfil = async () => {
     const usersRef = firestore().collection('users');
-
     const query = usersRef.where('uid', '==', user.uid);
     const snapshot = await query.get();
     snapshot.forEach(doc => {
@@ -54,13 +61,16 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
     });
   };
 
-  const loadIssues = async () => {
+  const loadIssues = async (filter = 'assignMe') => {
     setLoading(true);
 
     try {
       const snapRef = await firestore().doc(`users/${user?.uid}`).get();
       const userRef = snapRef.ref;
-      const query = collectionRef.where('assignTo', '==', userRef);
+      const query =
+        filter == 'assignMe'
+          ? collectionRef.where('assignTo', '==', userRef)
+          : collectionRef.where('author', '==', user?.uid);
       const snapshot = await query.get();
       const userTasks = [];
       snapshot.forEach(doc => {
@@ -89,6 +99,32 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
     });
   }
 
+  const handleDeleteIssue = (item: Issue) => {
+    if (filter === 'assignMe') {
+      return Alert.alert(
+        'Attention',
+        "Vous devez être l'auteur du ticket pour pouvoir le supprimer",
+      );
+    }
+    Alert.alert('Suppression', 'Voulez-vous supprimer cette demande', [
+      {
+        text: 'Annuler',
+        onPress: () => {},
+      },
+      {
+        text: 'Supprimer',
+        onPress: () => deleteTask(),
+      },
+    ]);
+  };
+
+  const deleteTask = async () => {
+    const docRef = collectionRef.doc(item.id);
+    await docRef.delete();
+
+    Alert.alert('Informations', 'Votre ticket a bien été supprimé');
+    loadIssues();
+  };
   if (loading)
     return (
       <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
@@ -134,6 +170,49 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
                     </TouchableOpacity>
                   </View>
                 </View>
+
+                {/* Filter */}
+                <View style={styles.buttonsContainer}>
+                  <View style={[{flex: 1}]}>
+                    <TouchableOpacity
+                      style={[
+                        styles.myrequestBtn,
+                        {
+                          backgroundColor:
+                            filter === 'request'
+                              ? colorTheme.active
+                              : colorTheme.disabled,
+                        },
+                      ]}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setFilter('request');
+                        loadIssues('request');
+                      }}>
+                      <Text style={styles.addButtonText}>Mes demandes</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={{width: 10}} />
+                  <View style={[{flex: 1}]}>
+                    <TouchableOpacity
+                      style={[
+                        styles.assignBtn,
+                        {
+                          backgroundColor:
+                            filter === 'assignMe'
+                              ? colorTheme.active
+                              : colorTheme.disabled,
+                        },
+                      ]}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setFilter('assignMe');
+                        loadIssues('assignMe');
+                      }}>
+                      <Text style={styles.logoutButtonText}>Assigné à moi</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
             </>
           );
@@ -164,6 +243,7 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
             <View style={styles.containerItem}>
               <TouchableOpacity
                 activeOpacity={0.7}
+                onLongPress={() => handleDeleteIssue(item)}
                 onPress={() => {
                   navigation.navigate('AddIssueView', {
                     issue: item,
@@ -220,7 +300,23 @@ const styles = StyleSheet.create({
   addButton: {
     flex: 2,
     height: 90,
-    backgroundColor: '#009688',
+    backgroundColor: colorTheme.active,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+  },
+  myrequestBtn: {
+    flex: 2,
+    height: 60,
+    backgroundColor: colorTheme.active,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+  },
+  assignBtn: {
+    flex: 2,
+    height: 60,
+    backgroundColor: colorTheme.active,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20,
@@ -233,7 +329,7 @@ const styles = StyleSheet.create({
   logoutButton: {
     flex: 1,
     height: 90,
-    backgroundColor: '#009688',
+    backgroundColor: colorTheme.active,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20,

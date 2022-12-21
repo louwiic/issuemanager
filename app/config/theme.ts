@@ -2,6 +2,8 @@ import {ColorValue} from 'react-native';
 
 enum colorTheme {
   main= '#4db6ac',
+  disabled= '#4db6ac60',
+  active= '#009688',
   headerTab= '#fafafa',
   greyLight= '#f8f8f8',
   bottomsheetbg= '#f5f5f5',

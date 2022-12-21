@@ -159,7 +159,6 @@ const LoginView: FC<ChildProps> = ({navigation}): ReactElement => {
       </Button>
       <Button
         mode="text"
-        loading={loading}
         style={{marginTop: 10}}
         contentStyle={{padding: 5}}
         onPress={() => {
