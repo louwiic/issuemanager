@@ -231,6 +231,9 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.ticketsContainer}>
+        <Text style={styles.ticketsText}>Créer une demande</Text>
+      </View>
       <View style={styles.content}>
         {/* Picker 1 */}
         <TextInput
@@ -416,123 +419,6 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
       </View>
     </View>
   );
-
-  return (
-    <View style={styles.container}>
-      <View
-        style={{
-          marginTop: 10,
-        }}>
-        <TextInput
-          multiline
-          placeholder="Password"
-          style={{
-            margin: 10,
-            fontSize: 18,
-            color: '#000000',
-            borderWidth: 1,
-            borderColor: '#000000',
-            padding: 10,
-            height: 200,
-            justifyContent: 'flex-start',
-          }}
-        />
-      </View>
-
-      <View style={{}}>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            LogoutButton();
-          }}
-          style={{height: 48, width: 200, backgroundColor: 'orange'}}>
-          <Text style={{fontSize: 12}}>Se déconnecter</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={{marginHorizontal: '4%'}}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <View style={{marginTop: 10, width: '48%'}}>
-            <TextInput placeholder="Password" />
-          </View>
-          <View style={{marginTop: 10, width: '48%'}}>
-            <TextInput placeholder="Password" />
-          </View>
-        </View>
-
-        <View style={{marginTop: 20}}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <View
-              style={{
-                height: 20,
-                width: 20,
-                backgroundColor: '#78909c',
-                borderRadius: 10,
-              }}
-            />
-            <View style={{marginLeft: 10}}>
-              <Text style={{fontSize: 16, fontWeight: '400'}}>Type</Text>
-              <Text style={{fontSize: 14, fontWeight: '200', marginTop: 5}}>
-                Spécifier le type de ticket{' '}
-              </Text>
-            </View>
-          </View>
-          <Picker
-            selectedValue={type}
-            accessibilityLabel="Basic Picker Accessibility Label"
-            onValueChange={currentCurrency => setType(currentCurrency)}>
-            <Picker.Item label="Bug" value="bug" />
-            <Picker.Item label="Evolution" value="evolution" />
-            <Picker.Item label="Commentaire" value="comment" />
-          </Picker>
-        </View>
-
-        <View style={{marginTop: 20}}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <View
-              style={{
-                height: 20,
-                width: 20,
-                backgroundColor: '#558b2f',
-                borderRadius: 10,
-              }}
-            />
-            <View style={{marginLeft: 10}}>
-              <Text style={{fontSize: 16, fontWeight: '400'}}>Propiété</Text>
-              <Text style={{fontSize: 14, fontWeight: '200', marginTop: 5}}>
-                Choissisez le niveau de priorité du ticket{' '}
-              </Text>
-            </View>
-          </View>
-
-          <Picker
-            selectedValue={type}
-            accessibilityLabel="Basic Picker Accessibility Label"
-            onValueChange={currentCurrency => setType(currentCurrency)}>
-            <Picker.Item label="Elevé" value="hight" />
-            <Picker.Item label="Normal" value="normal" />
-            <Picker.Item label="Bas" value="low" />
-          </Picker>
-        </View>
-      </View>
-
-      {/* <Text>Selected: {currency}</Text> */}
-
-      {/*  <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => {
-          addIssue();
-        }}
-        style={{
-          height: 45,
-          width: '100%',
-          backgroundColor: 'orange',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Text style={{fontSize: 12, color: 'white'}}>Add Issue</Text>
-      </TouchableOpacity> */}
-    </View>
-  );
 };
 
 AddIssueView.defaultProps = {};
@@ -553,5 +439,15 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     flex: 1,
+  },
+  ticketsContainer: {
+    marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 16,
+  },
+  ticketsText: {
+    fontSize: 26,
+    fontWeight: 'bold',
   },
 });

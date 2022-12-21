@@ -110,7 +110,6 @@ export const priorityType = (status: string): ReactElement => {
           }}
         />
       );
-      s;
 
     default:
       <View style={{}}>{/* Element */}</View>;

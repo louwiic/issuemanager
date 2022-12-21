@@ -32,10 +32,7 @@ export const MainStack = () => {
           component={HomeView}
           options={{
             title: '  ',
-            headerShown: true,
-            headerStyle: {
-              backgroundColor: colorTheme.main,
-            },
+            headerShown: false,
             headerTintColor: '#fff',
             headerTitleStyle: {
               fontWeight: 'bold',

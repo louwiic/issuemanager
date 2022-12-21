@@ -19,6 +19,7 @@ import React, {
 import {
   Dimensions,
   FlatList,
+  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -31,6 +32,7 @@ import {IconButton, Button} from 'react-native-paper';
 import {UserContext} from '../../context/UserContext';
 import {Icon} from 'react-native-paper/lib/typescript/components/Avatar/Avatar';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Stats from '../../components/Stats';
 
 type ChildProps = {
   navigation: NavigationProp<ParamListBase>;
@@ -56,43 +58,6 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
   const [numberIssuesDone, setNumberIssuesDone] = useState<Number>(0);
   const insets = useSafeAreaInsets();
   const issuesRef = firestore().collection('issues');
-
-  React.useEffect(() => {
-    navigation.setOptions({
-      headerRight: props => <AddIssue {...props} />,
-      headerLeft: props => <FilterIssue {...props} />,
-    });
-  }, [navigation, user]);
-
-  const FilterIssue = () => {
-    return (
-      <View>
-        <IconButton
-          icon="tune"
-          iconColor={colorTheme.greyLight}
-          size={20}
-          onPress={() => console.log('Pressed')}
-        />
-      </View>
-    );
-  };
-
-  const AddIssue = () => {
-    return (
-      <View>
-        <IconButton
-          icon="plus-circle"
-          iconColor={colorTheme.greyLight}
-          size={20}
-          onPress={() => {
-            !!user
-              ? navigation.navigate('ProfileView')
-              : navigation.navigate('AuthStack');
-          }}
-        />
-      </View>
-    );
-  };
 
   /**
    * Get stats - number of issues with ermengy priority
@@ -205,30 +170,13 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
     return <ActivityIndicator />;
   }
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={{marginHorizontal: '4%'}}>
-        <View style={styles.ticketsContainer}>
-          <Text style={styles.ticketsText}>Tickets</Text>
-        </View>
-        <View style={styles.statsContainer}>
-          <View
-            style={[styles.statContainer, {backgroundColor: colorTheme.done}]}>
-            <Text style={styles.statNumber}>{numberIssuesDone.toString()}</Text>
-            <Text style={styles.statText}>Terminé</Text>
-          </View>
-          <View
-            style={[styles.statContainer, {backgroundColor: colorTheme.higth}]}>
-            <Text style={styles.statNumber}>
-              {numberIssueHigthPrio.toString()}
-            </Text>
-            <Text style={styles.statText}>Priorité élévé</Text>
-          </View>
-          <View
-            style={[styles.statContainer, {backgroundColor: colorTheme.new}]}>
-            <Text style={styles.statNumber}>{numberNewIssues.toString()}</Text>
-            <Text style={styles.statText}>A traiter</Text>
-          </View>
-        </View>
+        <Stats
+          numberNewIssues={numberNewIssues.toString()}
+          numberIssuesDone={numberIssuesDone.toString()}
+          numberIssueHigthPrio={numberIssueHigthPrio.toString()}
+        />
         <FlatList
           horizontal
           data={issuesList}
@@ -272,7 +220,7 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
         style={[styles.btnAddContainer, {bottom: insets.bottom + 10}]}>
         <Text style={styles.textBtn}>+</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -298,37 +246,6 @@ const styles = StyleSheet.create({
   },
   containerStat: {
     marginHorizontal: '4%',
-  },
-  ticketsContainer: {
-    marginTop: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ticketsText: {
-    fontSize: 26,
-    fontWeight: 'bold',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    marginTop: 20,
-  },
-  statContainer: {
-    flex: 1,
-    height: 110,
-    marginRight: 10,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statNumber: {
-    fontSize: 54,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  statText: {
-    fontSize: 12,
-    color: '#fff',
-    fontWeight: '600',
   },
   btnAddContainer: {
     height: 48,
