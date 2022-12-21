@@ -6628,11 +6628,6 @@
     "jscodeshift" "^0.13.1"
     "nullthrows" "^1.1.1"
 
-"react-native-cross-actionsheet@^1.0.1":
-  "integrity" "sha512-GbLLHKNrdlm1AZm3EJO1AGclaYbbZEqpp4zGAFGuHclNg9O9z2RnHX6JwVj79SlfeYMc/cT+jM5KtJZU3x4eTg=="
-  "resolved" "https://registry.npmjs.org/react-native-cross-actionsheet/-/react-native-cross-actionsheet-1.0.1.tgz"
-  "version" "1.0.1"
-
 "react-native-date-picker@^4.2.6":
   "integrity" "sha512-qnSLefvCInFp1etQ27AsDzpCJgvi0Q0eIYRtIzjBp5WC5hzINIY7WWeQESAA/QUPbwFJU7Vk06ouQc51dC1Qaw=="
   "resolved" "https://registry.npmjs.org/react-native-date-picker/-/react-native-date-picker-4.2.6.tgz"
@@ -6736,7 +6731,7 @@
     "prop-types" "^15.7.2"
     "yargs" "^16.1.1"
 
-"react-native@*", "react-native@^0.60.0", "react-native@>= 0.50.0", "react-native@>=0.42.0", "react-native@>=0.48.4", "react-native@>=0.57", "react-native@>=0.60.0-rc.0 <1.0.x", "react-native@0.70.0":
+"react-native@*", "react-native@^0.60.0", "react-native@>= 0.50.0", "react-native@>=0.42.0", "react-native@>=0.48.4", "react-native@>=0.57", "react-native@0.70.0":
   "integrity" "sha512-QjXLbrK9f+/B2eCzn6kAvglLV/8nwPuFGaFv7ggPpAzFRyx5bVN1dwQLHL3MrP7iXR/M7Jc6Nnid7tmRSic6vA=="
   "resolved" "https://registry.npmjs.org/react-native/-/react-native-0.70.0.tgz"
   "version" "0.70.0"
@@ -6796,7 +6791,7 @@
     "react-shallow-renderer" "^16.15.0"
     "scheduler" "^0.22.0"
 
-"react@*", "react@^16.0 || ^17.0.0 || ^18.0.0", "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17 || ^18", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.8.1", "react@^18.1.0", "react@> 16.7.0", "react@>=16", "react@>=16.3.0", "react@>=17.0.0", "react@18.1.0":
+"react@*", "react@^16.0 || ^17.0.0 || ^18.0.0", "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17 || ^18", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^18.1.0", "react@> 16.7.0", "react@>=16", "react@>=16.3.0", "react@>=17.0.0", "react@18.1.0":
   "integrity" "sha512-4oL8ivCz5ZEPyclFQXaNksK3adutVS8l2xzZU0cqEFrE9Sb7fC0EFK5uEk74wIreL1DERyjvsU915j1pcT2uEQ=="
   "resolved" "https://registry.npmjs.org/react/-/react-18.1.0.tgz"
   "version" "18.1.0"

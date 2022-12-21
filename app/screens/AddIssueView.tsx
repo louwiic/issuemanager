@@ -1,29 +1,12 @@
 import {
   NavigationProp,
-  ParamListBase,
   RouteProp,
   useNavigation,
+  useRoute,
 } from '@react-navigation/native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import React, {
-  FC,
-  ReactElement,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {
-  Alert,
-  Dimensions,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React, {FC, ReactElement, useContext, useEffect, useState} from 'react';
+import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {Avatar, Button, HelperText, TextInput} from 'react-native-paper';
 import colorTheme from '../config/theme';
 import firestore from '@react-native-firebase/firestore';
@@ -33,24 +16,28 @@ import {UserContext} from '../context/UserContext';
 import BottomSheet from '@gorhom/bottom-sheet';
 import MyBottomSheet from '../components/MyBottomSheet';
 import {Controller, Resolver, useForm} from 'react-hook-form';
+import ModalPicker from '../components/ModalPicker';
+import {Issue} from '../type/IssueType';
 
 const PickerComponent = ({type, selected, items}) => {
   return (
-    <Picker
-      selectedValue={type?.value}
-      accessibilityLabel="Basic Picker Accessibility Label"
-      onValueChange={(itemValue: string | number, itemIndex: number) => {
-        selected({
-          value: itemValue,
-          label: items[itemIndex].label,
-        });
-      }}>
-      {items.map((item, index) => {
-        return (
-          <Picker.Item key={index} label={item.label} value={item.value} />
-        );
-      })}
-    </Picker>
+    <View>
+      <Picker
+        selectedValue={type?.value}
+        accessibilityLabel="Basic Picker Accessibility Label"
+        onValueChange={(itemValue: string | number, itemIndex: number) => {
+          selected({
+            value: itemValue,
+            label: items[itemIndex].label,
+          });
+        }}>
+        {items.map((item, index) => {
+          return (
+            <Picker.Item key={index} label={item.label} value={item.value} />
+          );
+        })}
+      </Picker>
+    </View>
   );
 };
 
@@ -59,10 +46,8 @@ interface UserContextProps {
   setUser: (newValue: object) => void;
 }
 
-type ChildProps = {
-  route?: RouteProp<ParamListBase>;
+type IssueProps = {
   isConnected?: boolean;
-  cb: () => void;
 };
 
 type BottomSheetValues = {
@@ -112,19 +97,10 @@ const resolver: Resolver<FormValues> = async values => {
   };
 };
 
-const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
-  const [type, setType] = useState<BottomSheetValues>({
-    label: '',
-    value: '',
-  });
-  const [priority, setPriority] = useState<object>({
-    label: '',
-    value: '',
-  });
-
-  const [open, setOpen] = useState<Boolean>(false);
-  const [date, setDate] = useState(new Date());
+const AddIssueView: FC<IssueProps> = ({}): ReactElement => {
   const navigation = useNavigation();
+  const route = useRoute();
+  const {issue, cb}: {issue: Issue; cb: () => void} = route?.params || {};
   const {user, setUser} = useContext<UserContextProps>(UserContext);
   const [userList, setUserList] = useState<BottomSheetValues[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -133,6 +109,7 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
     watch,
     handleSubmit,
     formState: {errors},
+    setValue,
   } = useForm<FormValues>({
     resolver,
     defaultValues: {
@@ -140,15 +117,26 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
       priority: {label: 'Normal', value: 'normal'},
     },
   });
-
-  const bottomSheetRef1 = useRef<BottomSheet>(null);
-  const bottomSheetRef2 = useRef<BottomSheet>(null);
-  const bottomSheetRef3 = useRef<BottomSheet>(null);
+  const [modalVisible1, setModalVisible1] = useState<Boolean>(false);
+  const [modalVisible2, setModalVisible2] = useState<Boolean>(false);
+  const [modalVisible3, setModalVisible3] = useState<Boolean>(false);
+  const [title, setTitle] = useState('Créer une demande');
   const priorityValue = watch('priority');
   const statusValue = watch('status');
   const userValue = watch('users');
   const issueRef = firestore().collection('issues');
   const usersRef = firestore().collection('users');
+
+  useEffect(() => {
+    if (!!issue && user) {
+      setTitle(
+        issue.ref ? 'Modifier le demande ' + issue?.ref : 'Modifier le demande',
+      );
+      setValue('status', {label: issue.status, value: issue.status});
+      setValue('priority', {label: issue.priority, value: issue.priority});
+      setValue('description', issue.request);
+    }
+  }, [issue]);
 
   useEffect(() => {
     loadIssues();
@@ -173,6 +161,12 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
             value: item?.uid,
           };
         });
+        if (!!issue) {
+          setValue(
+            'users',
+            userFormatted.filter(u => u.value === issue.assignTo.id)?.[0],
+          );
+        }
         setUserList(userFormatted);
 
         setLoading(false);
@@ -204,20 +198,23 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
     fetchUsers();
   }, []); */
 
-  const generateRef = () => {
-    const timestamp = Date.now();
-    const base36 = timestamp.toString(36);
-    const reference = base36.substring(0, 3);
+  const generateFakeRef = () => {
+    const characters = '123456789';
+    let fakeRef = '';
 
-    return reference;
+    for (let i = 0; i < 3; i++) {
+      fakeRef += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
+    }
+
+    return fakeRef;
   };
 
   const onSubmit = async data => {
     const userId = data?.users?.value;
     const ref = firestore().collection('users').doc(userId);
-    //assignTo: `/users/${data.users.value}`,
-
-    const issue = {
+    const obj = {
       author: `${user.uid}`,
       assignTo: ref,
       date: firestore.FieldValue.serverTimestamp(),
@@ -225,11 +222,20 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
       status: data.status.value,
       type: 'Maintenance',
       request: data.description,
-      ref: `#${generateRef()}`,
+      ref: `#${generateFakeRef()}`,
     };
 
     try {
-      const docRef = await issueRef.add(issue);
+      if (!!issue) {
+        const docRefUpdated = issueRef.doc(issue.id);
+        await docRefUpdated.set(obj);
+        Alert.alert('Infos', 'Votre ticket a bien été mise à jour !');
+        cb();
+        navigation.goBack();
+
+        return;
+      }
+      const docRef = await issueRef.add(obj);
       if (docRef?.id) {
         Alert.alert('Infos', 'Votre ticket a bien été créé !');
         cb();
@@ -239,34 +245,31 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.ticketsContainer}>
-        <Text style={styles.ticketsText}>Créer une demande</Text>
-      </View>
-      <View style={styles.content}>
-        {/* Picker 1 */}
-        <TextInput
-          editable={false}
-          mode="outlined"
-          label="Status"
-          value={statusValue?.label}
-          onPressIn={() => bottomSheetRef1.current.snapToIndex(1)}
-          onBlur={() => bottomSheetRef1.current.close()}
-        />
-        {errors.status && (
-          <HelperText type="error" visible={errors.status}>
-            {errors.status?.message}
-          </HelperText>
-        )}
-        <MyBottomSheet
-          ref={bottomSheetRef1}
-          snapPoints={['2%', '45%']}
-          onChange={(index: number) => {
-            if (index == 0) {
-              bottomSheetRef1.current.close();
-            }
-          }}>
-          <View style={styles.contentBottomSheet}>
+    <KeyboardAwareScrollView style={styles.container}>
+      <View style={{flex: 1}}>
+        <View style={styles.ticketsContainer}>
+          <Text style={styles.ticketsText}>{title}</Text>
+        </View>
+        <View style={styles.content}>
+          {/* Picker 1 */}
+          <TextInput
+            editable={false}
+            mode="outlined"
+            label="Status"
+            value={statusValue?.label}
+            onPressIn={() => setModalVisible1(true)}
+
+            //onBlur={() => bottomSheetRef1.current.close()}
+          />
+          {errors.status && (
+            <HelperText type="error" visible={errors.status}>
+              {errors.status?.message}
+            </HelperText>
+          )}
+          {/*   Status choice */}
+          <ModalPicker
+            modalVisible={modalVisible1}
+            setModalVisible={setModalVisible1}>
             <Controller
               control={control}
               rules={{
@@ -285,38 +288,26 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
               )}
               name="status"
             />
-            <Button
-              mode="contained"
-              style={{marginHorizontal: 10}}
-              onPress={() => bottomSheetRef1.current.close()}>
-              Sélectionner
-            </Button>
+          </ModalPicker>
+
+          {/* Picker type */}
+          <View style={{marginTop: 10}}>
+            <TextInput
+              editable={false}
+              mode="outlined"
+              label="Priorité"
+              value={priorityValue?.label}
+              onPressIn={() => setModalVisible2(true)}
+            />
           </View>
-        </MyBottomSheet>
-        {/* Picker type */}
-        <View style={{marginTop: 10}}>
-          <TextInput
-            editable={false}
-            mode="outlined"
-            label="Priorité"
-            value={priorityValue?.label}
-            onPressIn={() => bottomSheetRef2.current.snapToIndex(1)}
-          />
-        </View>
-        {errors.priority && (
-          <HelperText type="error" visible={errors.priority}>
-            {errors.priority?.message}
-          </HelperText>
-        )}
-        <MyBottomSheet
-          ref={bottomSheetRef2}
-          snapPoints={['2%', '45%']}
-          onChange={(index: number) => {
-            if (index == 0) {
-              bottomSheetRef2.current.close();
-            }
-          }}>
-          <View style={styles.contentBottomSheet}>
+          {errors.priority && (
+            <HelperText type="error" visible={errors.priority}>
+              {errors.priority?.message}
+            </HelperText>
+          )}
+          <ModalPicker
+            modalVisible={modalVisible2}
+            setModalVisible={setModalVisible2}>
             <Controller
               control={control}
               rules={{
@@ -335,68 +326,56 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
               )}
               name="priority"
             />
-            <Button
-              mode="contained"
-              style={{marginHorizontal: 10}}
-              onPress={() => bottomSheetRef2.current.close()}>
-              Sélectionner
-            </Button>
-          </View>
-        </MyBottomSheet>
-        {/* Description */}
-        <Controller
-          control={control}
-          rules={{
-            required: true,
-          }}
-          render={({field: {onChange, onBlur, value}}) => (
-            <TextInput
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              multiline
-              numberOfLines={4}
-              style={{
-                height: 100,
-                marginTop: 10,
-              }}
-              mode="outlined"
-              label="Description"
-              placeholder=" "
-            />
-          )}
-          name="description"
-        />
-        {errors.description && (
-          <HelperText type="error" visible={errors.description}>
-            {errors.description?.message}
-          </HelperText>
-        )}
+          </ModalPicker>
 
-        {/* Picker user */}
-        <View style={{marginTop: 10}}>
-          <TextInput
-            editable={false}
-            mode="outlined"
-            label="Utilisateurs"
-            value={userValue?.label}
-            onPressIn={() => bottomSheetRef3.current.snapToIndex(1)}
+          {/* Description */}
+          <Controller
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({field: {onChange, onBlur, value}}) => (
+              <TextInput
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                multiline
+                numberOfLines={4}
+                style={{
+                  height: 100,
+                  marginTop: 10,
+                }}
+                mode="outlined"
+                label="Description"
+                placeholder=" "
+              />
+            )}
+            name="description"
           />
-        </View>
-        {errors.users && (
-          <HelperText type="error" visible={errors.users}>
-            {errors.users?.message}
-          </HelperText>
-        )}
-        <MyBottomSheet
-          ref={bottomSheetRef3}
-          snapPoints={['2%', '45%']}
-          onChange={(index: number) => {
-            if (index == 0) {
-              bottomSheetRef3.current.close();
-            }
-          }}>
-          <View style={styles.contentBottomSheet}>
+          {errors.description && (
+            <HelperText type="error" visible={errors.description}>
+              {errors.description?.message}
+            </HelperText>
+          )}
+
+          {/* Picker user */}
+          <View style={{marginTop: 10}}>
+            <TextInput
+              editable={false}
+              mode="outlined"
+              label="Utilisateurs"
+              value={userValue?.label}
+              onPressIn={() => setModalVisible3(true)}
+            />
+          </View>
+          {errors.users && (
+            <HelperText type="error" visible={errors.users}>
+              {errors.users?.message}
+            </HelperText>
+          )}
+          <ModalPicker
+            modalVisible={modalVisible3}
+            setModalVisible={setModalVisible3}>
             <Controller
               control={control}
               rules={{
@@ -411,22 +390,17 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
               )}
               name="users"
             />
-            <Button
-              mode="contained"
-              style={{marginHorizontal: 10}}
-              onPress={() => bottomSheetRef3.current.close()}>
-              Sélectionner
-            </Button>
-          </View>
-        </MyBottomSheet>
-        <Button
-          mode="contained"
-          style={{marginTop: 40}}
-          onPress={handleSubmit(onSubmit)}>
-          Envoyer
-        </Button>
+          </ModalPicker>
+
+          <Button
+            mode="contained"
+            style={{marginTop: 40}}
+            onPress={handleSubmit(onSubmit)}>
+            Envoyer
+          </Button>
+        </View>
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 };
 
@@ -445,8 +419,7 @@ const styles = StyleSheet.create({
   },
   contentBottomSheet: {
     backgroundColor: colorTheme.bottomsheetbg,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+
     flex: 1,
   },
   ticketsContainer: {

@@ -163,19 +163,32 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
           const isssueDate = moment(t?.toDate?.()).format('L à HH:mm');
           return (
             <View style={styles.containerItem}>
-              <View style={styles.statusContainer}>
-                {statusColor(item?.status)}
-                <Text style={{paddingLeft: 5, fontWeight: 'bold'}}>
-                  {item.status}
-                </Text>
-                <View style={styles.dateContainer}>
-                  <Text>{isssueDate}</Text>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  navigation.navigate('AddIssueView', {
+                    issue: item,
+                    cb: () => {
+                      loadUserProfil();
+                      loadIssues();
+                    },
+                  });
+                }}
+                style={{}}>
+                <View style={styles.statusContainer}>
+                  {statusColor(item?.status)}
+                  <Text style={{paddingLeft: 5, fontWeight: 'bold'}}>
+                    {item.status}
+                  </Text>
+                  <View style={styles.dateContainer}>
+                    <Text>{isssueDate}</Text>
+                  </View>
                 </View>
-              </View>
-              <View style={{marginTop: 10}}>
-                <Text style={styles.descriptionTitle}>Description :</Text>
-                <Text style={styles.descriptionText}>{item.request}</Text>
-              </View>
+                <View style={{marginTop: 10}}>
+                  <Text style={styles.descriptionTitle}>Description :</Text>
+                  <Text style={styles.descriptionText}>{item.request}</Text>
+                </View>
+              </TouchableOpacity>
             </View>
           );
         }}
