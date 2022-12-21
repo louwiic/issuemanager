@@ -5,7 +5,7 @@ enum colorTheme {
   headerTab= '#fafafa',
   greyLight= '#f8f8f8',
   bottomsheetbg= '#f5f5f5',
-  done= '#263238',
+  done= '#689f38',
   inprogress= '#78909c',
   pikachuYellow= 'rgb(242, 227, 7)',
   normal= '#d1c4e9',
@@ -18,6 +18,7 @@ enum colorTheme {
   background= '#F2F2F4',
   maintenance= '#00acc1',
   new= '#b0bec5',
+  white= '#ffffff',
 }
 
 export default colorTheme;

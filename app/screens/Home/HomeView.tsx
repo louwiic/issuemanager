@@ -24,12 +24,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {Avatar} from 'react-native-paper';
+import {ActivityIndicator, Avatar} from 'react-native-paper';
 import RowListItem from '../../components/RowListItem';
 import colorTheme from '../../config/theme';
 import {IconButton, Button} from 'react-native-paper';
 import {UserContext} from '../../context/UserContext';
 import {Icon} from 'react-native-paper/lib/typescript/components/Avatar/Avatar';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 type ChildProps = {
   navigation: NavigationProp<ParamListBase>;
@@ -49,7 +50,13 @@ interface UserContextProps {
 const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
   const [issuesList, setIssuesList] = useState([]);
   const {user} = useContext<UserContextProps>(UserContext);
+  const [loading, setLoading] = useState<Boolean>(false);
   const [numberIssueHigthPrio, setNumberIssueHigthPrio] = useState<Number>(0);
+  const [numberNewIssues, setNumberNewIssues] = useState<Number>(0);
+  const [numberIssuesDone, setNumberIssuesDone] = useState<Number>(0);
+  const insets = useSafeAreaInsets();
+  const issuesRef = firestore().collection('issues');
+
   React.useEffect(() => {
     navigation.setOptions({
       headerRight: props => <AddIssue {...props} />,
@@ -87,59 +94,85 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
     );
   };
 
+  /**
+   * Get stats - number of issues with ermengy priority
+   */
   useEffect(() => {
-    const subscriber = firestore()
-      .collection('issues')
-      .onSnapshot(querySnapshot => {
+    const subscriber = () => {
+      const queryStatEmergency = issuesRef.where('priority', '==', 'emergency');
+      queryStatEmergency.get().then(querySnapshot => {
         const issues = [];
+        querySnapshot.forEach(documentSnapshot => {
+          issues.push(documentSnapshot.data());
+        });
+        const priorityHigthCount = issues.length;
+        setNumberIssueHigthPrio(priorityHigthCount);
+      });
+      /* query new issue */
+      const queryStatNew = issuesRef.where('status', '==', 'new');
+      queryStatNew.get().then(querySnapshot => {
+        const newIssues = [];
+        querySnapshot.forEach(documentSnapshot => {
+          newIssues.push(documentSnapshot.data());
+        });
+        const newIssuesCount = newIssues.length;
+        setNumberNewIssues(newIssuesCount);
+      });
+      /* query new issue */
+      const queryStatDone = issuesRef.where('status', '==', 'done');
+      queryStatDone.get().then(querySnapshot => {
+        const issuesDone = [];
+        querySnapshot.forEach(documentSnapshot => {
+          issuesDone.push(documentSnapshot.data());
+        });
+        const issuesDoneCount = issuesDone.length;
+        setNumberIssuesDone(issuesDoneCount);
+      });
+    };
+    subscriber();
+  }, []);
 
-        querySnapshot.forEach(issueDoc => {
-          // Récupération des données de l'issue
-          const issueData = issueDoc.data();
+  /**
+   * Get all issues
+   */
+  useEffect(() => {
+    setLoading(true);
+    const subscriber = issuesRef.limit(4).onSnapshot(querySnapshot => {
+      const issues = [];
+      querySnapshot.forEach(issueDoc => {
+        // get issues data
+        const issueData = issueDoc.data();
 
-          // Récupération de la référence de l'utilisateur assigné
-          const assignTo = issueData.assignTo;
+        // get ref user assigned to issue
+        const assignTo = issueData.assignTo;
 
-          // Filtrage des documents de la collection "users" en fonction de leur référence
-          const usersRef = firestore()
-            .collection('users')
-            .where('uid', '==', assignTo.id);
+        // filters user with id
+        const usersRef = firestore()
+          .collection('users')
+          .where('uid', '==', assignTo.id);
 
-          // Récupération des données de tous les utilisateurs correspondant à la référence
-          usersRef.get().then(querySnapshot => {
-            querySnapshot.forEach(userDoc => {
-              // Récupération des données de l'utilisateur
-              const userData = userDoc.data();
-              // Stockage des données de l'utilisateur dans le tableau de correspondance
-              // usersData['userAssigned'] = userData;
+        // get user info affected to issue
+        usersRef.get().then(querySnapshot => {
+          setLoading(false);
+
+          querySnapshot.forEach(userDoc => {
+            const userData = userDoc.data();
+            issues.push({
+              ...issueDoc.data(),
+              key: issueDoc.id,
+              ...{userAssigned: userData},
             });
+            setIssuesList(issues);
           });
-
-          issues.push({
-            ...issueDoc.data(),
-            key: issueDoc.id,
-            //...{userAssigned: userData},
-          });
-          const priorityHigth = issues.filter(i => i.priority === 'higth');
-          const priorityHigthCount = priorityHigth.length;
-          setNumberIssueHigthPrio(priorityHigthCount);
-          // Mise à jour de la liste des issues
-          setIssuesList(issues);
         });
       });
+    });
     return () => subscriber();
   }, []);
 
   const HeaderTab = () => {
     return (
-      <View
-        style={{
-          backgroundColor: colorTheme.headerTab,
-          flexDirection: 'row',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          height: 50,
-        }}>
+      <View style={styles.headerContainerTab}>
         <View style={[styles.headRow, {width: 100}]}>
           <Text style={styles.headText}>Date d'ajout</Text>
         </View>
@@ -168,32 +201,34 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
     return <RowListItem key={ref} issue={item} />;
   };
 
+  if (loading) {
+    return <ActivityIndicator />;
+  }
   return (
     <View style={styles.container}>
       <View style={{marginHorizontal: '4%'}}>
-        {/*  <View style={styles.ticketsContainer}>
+        <View style={styles.ticketsContainer}>
           <Text style={styles.ticketsText}>Tickets</Text>
         </View>
         <View style={styles.statsContainer}>
           <View
-            style={[styles.statContainer, {backgroundColor: colorTheme.new}]}>
-            <Text style={styles.statNumber}>1{numberIssueHigthPrio}</Text>
-            <Text style={styles.statText}>A traiter</Text>
+            style={[styles.statContainer, {backgroundColor: colorTheme.done}]}>
+            <Text style={styles.statNumber}>{numberIssuesDone.toString()}</Text>
+            <Text style={styles.statText}>Terminé</Text>
           </View>
           <View
             style={[styles.statContainer, {backgroundColor: colorTheme.higth}]}>
-            <Text style={styles.statNumber}>{numberIssueHigthPrio}</Text>
+            <Text style={styles.statNumber}>
+              {numberIssueHigthPrio.toString()}
+            </Text>
             <Text style={styles.statText}>Priorité élévé</Text>
           </View>
           <View
-            style={[
-              styles.statContainer,
-              {backgroundColor: colorTheme.inprogress},
-            ]}>
-            <Text style={styles.statNumber}>4{numberIssueHigthPrio}</Text>
+            style={[styles.statContainer, {backgroundColor: colorTheme.new}]}>
+            <Text style={styles.statNumber}>{numberNewIssues.toString()}</Text>
             <Text style={styles.statText}>A traiter</Text>
           </View>
-        </View> */}
+        </View>
         <FlatList
           horizontal
           data={issuesList}
@@ -203,12 +238,40 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
             marginTop: 20,
             flexDirection: 'column',
           }}
-          ItemSeparatorComponent={() => (
-            <View style={{height: 10, backgroundColor: 'orange'}} />
-          )}
           keyExtractor={item => item.id}
         />
+
+        <View style={{marginTop: 20, width: 120}}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              //
+            }}
+            style={{
+              height: 30,
+              padding: 8,
+              backgroundColor: colorTheme.main,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 4,
+            }}>
+            <Text style={{fontSize: 14, color: colorTheme.white}}>
+              Voir plus
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
+      {/*  add issue button */}
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => {
+          !!user
+            ? navigation.navigate('ProfileView')
+            : navigation.navigate('AuthStack');
+        }}
+        style={[styles.btnAddContainer, {bottom: insets.bottom + 10}]}>
+        <Text style={styles.textBtn}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -220,6 +283,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF',
+  },
+  headerContainerTab: {
+    backgroundColor: colorTheme.headerTab,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    height: 50,
   },
   headText: {fontSize: 14, fontWeight: '600'},
   headRow: {
@@ -241,7 +311,6 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     marginTop: 20,
-    justifyContent: 'space-between',
   },
   statContainer: {
     flex: 1,
@@ -260,5 +329,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#fff',
     fontWeight: '600',
+  },
+  btnAddContainer: {
+    height: 48,
+    width: 48,
+    borderRadius: 24,
+    backgroundColor: colorTheme.main,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    right: 20,
+  },
+  textBtn: {
+    fontSize: 32,
+    color: colorTheme.white,
+    fontWeight: '500',
   },
 });
