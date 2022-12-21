@@ -19,13 +19,15 @@ import React, {
 import {
   Dimensions,
   FlatList,
+  Image,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import {ActivityIndicator, Avatar} from 'react-native-paper';
+import {ActivityIndicator, Avatar, TextInput} from 'react-native-paper';
 import RowListItem from '../../components/RowListItem';
 import colorTheme from '../../config/theme';
 import {IconButton, Button} from 'react-native-paper';
@@ -57,14 +59,19 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
   const [numberNewIssues, setNumberNewIssues] = useState<Number>(0);
   const [numberIssuesDone, setNumberIssuesDone] = useState<Number>(0);
   const insets = useSafeAreaInsets();
-  const issuesRef = firestore().collection('issues');
+  const issuesQuery = firestore().collection('issues');
+  const [searchQuery, setSearchQuery] = useState('');
 
   /**
    * Get stats - number of issues with ermengy priority
    */
   useEffect(() => {
     const subscriber = () => {
-      const queryStatEmergency = issuesRef.where('priority', '==', 'emergency');
+      const queryStatEmergency = issuesQuery.where(
+        'priority',
+        '==',
+        'emergency',
+      );
       queryStatEmergency.get().then(querySnapshot => {
         const issues = [];
         querySnapshot.forEach(documentSnapshot => {
@@ -74,7 +81,7 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
         setNumberIssueHigthPrio(priorityHigthCount);
       });
       /* query new issue */
-      const queryStatNew = issuesRef.where('status', '==', 'new');
+      const queryStatNew = issuesQuery.where('status', '==', 'new');
       queryStatNew.get().then(querySnapshot => {
         const newIssues = [];
         querySnapshot.forEach(documentSnapshot => {
@@ -84,7 +91,7 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
         setNumberNewIssues(newIssuesCount);
       });
       /* query new issue */
-      const queryStatDone = issuesRef.where('status', '==', 'done');
+      const queryStatDone = issuesQuery.where('status', '==', 'done');
       queryStatDone.get().then(querySnapshot => {
         const issuesDone = [];
         querySnapshot.forEach(documentSnapshot => {
@@ -102,38 +109,44 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
    */
   useEffect(() => {
     setLoading(true);
-    const subscriber = issuesRef.limit(4).onSnapshot(querySnapshot => {
-      const issues = [];
-      querySnapshot.forEach(issueDoc => {
-        // get issues data
-        const issueData = issueDoc.data();
+    loadIssues();
+  }, []);
 
-        // get ref user assigned to issue
-        const assignTo = issueData.assignTo;
+  const loadIssues = () => {
+    const subscriber = issuesQuery
+      .orderBy('date', 'desc')
+      //.limit(4)
+      .onSnapshot(querySnapshot => {
+        const issues = [];
+        querySnapshot.forEach(issueDoc => {
+          // get issues data
+          const issueData = issueDoc.data();
 
-        // filters user with id
-        const usersRef = firestore()
-          .collection('users')
-          .where('uid', '==', assignTo.id);
+          // get ref user assigned to issue
+          const assignTo = issueData.assignTo;
 
-        // get user info affected to issue
-        usersRef.get().then(querySnapshot => {
-          setLoading(false);
+          // filters user with id
+          const usersRef = firestore()
+            .collection('users')
+            .where('uid', '==', assignTo.id);
 
-          querySnapshot.forEach(userDoc => {
-            const userData = userDoc.data();
-            issues.push({
-              ...issueDoc.data(),
-              key: issueDoc.id,
-              ...{userAssigned: userData},
+          // get user info affected to issue
+          usersRef.get().then(querySnapshot => {
+            setLoading(false);
+            querySnapshot.forEach(userDoc => {
+              const userData = userDoc.data();
+              issues.push({
+                ...issueDoc.data(),
+                key: issueDoc.id,
+                ...{userAssigned: userData},
+              });
+              setIssuesList(issues);
             });
-            setIssuesList(issues);
           });
         });
       });
-    });
     return () => subscriber();
-  }, []);
+  };
 
   const HeaderTab = () => {
     return (
@@ -169,46 +182,113 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
   if (loading) {
     return <ActivityIndicator />;
   }
+
+  const handleSearch = () => {
+    if (!Boolean(searchQuery)) return loadIssues();
+    issuesQuery
+      .where('ref', '==', searchQuery)
+      .get()
+      .then(querySnapshot => {
+        const searchResults = [];
+        querySnapshot.forEach(documentSnapshot => {
+          searchResults.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id,
+          });
+        });
+        console.log(' *** searchResults ***', searchResults);
+        setIssuesList(searchResults);
+      });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{marginHorizontal: '4%'}}>
-        <Stats
-          numberNewIssues={numberNewIssues.toString()}
-          numberIssuesDone={numberIssuesDone.toString()}
-          numberIssueHigthPrio={numberIssueHigthPrio.toString()}
-        />
-        <FlatList
-          horizontal
-          data={issuesList}
-          renderItem={renderItem}
-          ListHeaderComponent={() => <HeaderTab />}
-          contentContainerStyle={{
-            marginTop: 20,
-            flexDirection: 'column',
-          }}
-          keyExtractor={item => item.id}
-        />
-
-        <View style={{marginTop: 20, width: 120}}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => {
-              //
-            }}
-            style={{
-              height: 30,
-              padding: 8,
-              backgroundColor: colorTheme.main,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 4,
-            }}>
-            <Text style={{fontSize: 14, color: colorTheme.white}}>
-              Voir plus
-            </Text>
-          </TouchableOpacity>
+      <ScrollView showsVerticalScrollIndicator={true}>
+        <View style={styles.ticketsContainer}>
+          <Image style={{}} source={require('../../assets/logo.png')} />
+          <Text style={styles.ticketsText}>Outils de gestion des demandes</Text>
         </View>
-      </View>
+        <View style={{marginHorizontal: 16, marginTop: 30}}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <TextInput
+              mode="outlined"
+              value={searchQuery}
+              onChangeText={text => setSearchQuery(text)}
+              onSubmitEditing={handleSearch}
+              placeholder="Ex : #lbx"
+              returnKeyLabel="Rechercher"
+              returnKeyType="search"
+              style={{
+                backgroundColor: 'white',
+                borderRadius: 10,
+                flex: 1,
+                fontSize: 16,
+              }}
+            />
+            <IconButton
+              icon="magnify"
+              color="#009688"
+              size={30}
+              onPress={handleSearch}
+            />
+          </View>
+          <Text
+            style={{
+              fontSize: 12,
+              marginTop: 10,
+              fontWeight: '300',
+              fontStyle: 'italic',
+            }}>
+            Vous pouvez effectuer la recherche d'un ticket en tapant sa
+            référence ci-dessus ☝️
+          </Text>
+          <Stats
+            numberNewIssues={numberNewIssues.toString()}
+            numberIssuesDone={numberIssuesDone.toString()}
+            numberIssueHigthPrio={numberIssueHigthPrio.toString()}
+          />
+          <FlatList
+            horizontal
+            data={issuesList}
+            renderItem={renderItem}
+            ListEmptyComponent={() => (
+              <View style={{marginVertical: 16}}>
+                <Text style={{fontSize: 16}}>Il n'y pas de ticket</Text>
+              </View>
+            )}
+            ListHeaderComponent={() => (
+              <>
+                <HeaderTab />
+              </>
+            )}
+            contentContainerStyle={{
+              //minHeight: '100%',
+              marginTop: 20,
+              flexDirection: 'column',
+            }}
+            keyExtractor={item => item.id}
+          />
+          <View style={{marginTop: 20, width: 120}}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                //
+              }}
+              style={{
+                height: 30,
+                padding: 8,
+                backgroundColor: colorTheme.main,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 4,
+              }}>
+              <Text style={{fontSize: 14, color: colorTheme.white}}>
+                Voir plus
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
       {/*  add issue button */}
       <TouchableOpacity
         activeOpacity={0.7}
@@ -232,6 +312,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFF',
   },
+  ticketsContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+    marginLeft: 16,
+  },
+  ticketsText: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginTop: 8,
+  },
   headerContainerTab: {
     backgroundColor: colorTheme.headerTab,
     flexDirection: 'row',
@@ -245,7 +335,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   containerStat: {
-    marginHorizontal: '4%',
+    marginHorizontal: 16,
   },
   btnAddContainer: {
     height: 48,

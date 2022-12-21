@@ -63,7 +63,7 @@ const RowListItem: FC<ChildProps> = ({issue}): ReactElement => {
               color: colorTheme.regularBlue,
               fontWeight: '600',
             }}>
-            Ref : #{issue.key?.slice(0, 3)}{' '}
+            Ref : {issue?.ref}{' '}
           </Text>
           <Text numberOfLines={2} style={{fontSize: 12}}>
             {issue?.request}

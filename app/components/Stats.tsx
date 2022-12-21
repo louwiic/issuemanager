@@ -23,9 +23,6 @@ const Stats: FC<ChildProps> = ({
 }): ReactElement => {
   return (
     <>
-      <View style={styles.ticketsContainer}>
-        <Text style={styles.ticketsText}>Tickets</Text>
-      </View>
       <View style={styles.statsContainer}>
         <View
           style={[styles.statContainer, {backgroundColor: colorTheme.done}]}>
@@ -51,22 +48,9 @@ Stats.defaultProps = {};
 export default Stats;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF',
-  },
-  ticketsContainer: {
-    marginTop: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ticketsText: {
-    fontSize: 26,
-    fontWeight: 'bold',
-  },
   statsContainer: {
     flexDirection: 'row',
-    marginTop: 20,
+    marginTop: 40,
   },
   statContainer: {
     flex: 1,

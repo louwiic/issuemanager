@@ -204,6 +204,14 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
     fetchUsers();
   }, []); */
 
+  const generateRef = () => {
+    const timestamp = Date.now();
+    const base36 = timestamp.toString(36);
+    const reference = base36.substring(0, 3);
+
+    return reference;
+  };
+
   const onSubmit = async data => {
     const userId = data?.users?.value;
     const ref = firestore().collection('users').doc(userId);
@@ -217,6 +225,7 @@ const AddIssueView: FC<ChildProps> = ({cb}): ReactElement => {
       status: data.status.value,
       type: 'Maintenance',
       request: data.description,
+      ref: `#${generateRef()}`,
     };
 
     try {
