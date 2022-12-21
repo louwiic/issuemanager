@@ -34,6 +34,7 @@ export const MainStack = () => {
             title: '  ',
             headerShown: false,
             headerTintColor: '#fff',
+            headerBackTitle: '',
             headerTitleStyle: {
               fontWeight: 'bold',
             },
@@ -42,9 +43,25 @@ export const MainStack = () => {
         <Stack.Screen
           name="ProfileView"
           component={ProfilView}
-          options={{
-            title: '  ',
+          options={({navigation}) => ({
+            title: '',
             headerShown: true,
+            headerBackTitle: '',
+            headerLeft: props => {
+              return (
+                <View>
+                  <IconButton
+                    {...props}
+                    icon="arrow-left"
+                    iconColor={colorTheme.greyLight}
+                    size={20}
+                    onPress={() => {
+                      navigation.goBack();
+                    }}
+                  />
+                </View>
+              );
+            },
             headerStyle: {
               backgroundColor: colorTheme.main,
             },
@@ -52,7 +69,7 @@ export const MainStack = () => {
             headerTitleStyle: {
               fontWeight: 'bold',
             },
-          }}
+          })}
         />
         <Stack.Screen
           name="AddIssueView"
