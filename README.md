@@ -13,3 +13,5 @@ Installation :
 - Ajout/modification/suppresion de ticket
 - Affichage de la liste des tickets
 - Gestion de compte
+
+![accueil](https://user-images.githubusercontent.com/36227564/209065008-fe11c2c2-ee8e-47d0-ad2f-5e5cdc292849.jpg)
