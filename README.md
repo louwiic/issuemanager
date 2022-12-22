@@ -5,8 +5,8 @@ Ce projet a été principalement testé sur iOS. Il est possible d'ajouter un fi
 
 Installations :
 
-- Commencer par installer les packages `npm install`
-- Ensuite aller dans le dossier iOS et faire la command `bundle exec pod install`
+- Commencer par installer les packages node modules `npm install`
+- Ensuite aller dans le dossier iOS et faire la commande `bundle exec pod install`
 - Une fois les commandes OK vous pouvez lancer le projet depuis Xcode ou avec la command `npx react-native run-ios`
 
 ## Features
