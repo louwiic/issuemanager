@@ -3,7 +3,7 @@ import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import colorTheme from '../config/theme';
 import HomeView from '../screens/Home/HomeView';
-import AddIssueView from '../screens/AddIssueView';
+import AddIssueView from '../screens/Profil/AddIssueView';
 import {IconButton} from 'react-native-paper';
 import {View} from 'react-native';
 import {AuthStack} from './AuthStack';
@@ -25,7 +25,7 @@ export const navigationRef = React.createRef();
 
 export const MainStack = () => {
   return (
-    <NavigationContainer ref={navigationRef} /* theme={theme} */>
+    <NavigationContainer /* theme={theme} */>
       <Stack.Navigator initialRouteName={'Home'}>
         <Stack.Screen
           name="HomeView"

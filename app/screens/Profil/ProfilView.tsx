@@ -41,8 +41,9 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
   const {user, setUser} = useContext<UserContextProps>(UserContext);
   const [loading, setLoading] = useState<Boolean>(false);
   const collectionRef = firestore().collection('issues');
-  const [userInfos, setUserInfos] = useState(null);
+  const [userInfos, setUserInfos] = useState<FirebaseAuthTypes.User>(null);
   const [filter, setFilter] = useState<string>('assignMe');
+  const [userAssignToIssue, setUserAssignToIssue] = useState([]);
 
   useEffect(() => {
     if (user) {
@@ -51,6 +52,9 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
     }
   }, [user]);
 
+  /**
+   * get info user profil
+   */
   const loadUserProfil = async () => {
     const usersRef = firestore().collection('users');
     const query = usersRef.where('uid', '==', user.uid);
@@ -61,9 +65,32 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
     });
   };
 
+  const getUserAssignTo = async (id: string) => {
+    const userDoc = firestore()
+      .collection('users')
+      .where('uid', '==', id)
+      .get();
+
+    userDoc.then(querySnapshot => {
+      const u = [];
+      setLoading(false);
+      querySnapshot.forEach(userDoc => {
+        const userData = userDoc.data();
+        u.push({
+          ...userData,
+          key: userData.id,
+        });
+      });
+      setUserAssignToIssue(u);
+    });
+  };
+
+  /**
+   * get issue assigned to me or issue added
+   * @param filter
+   */
   const loadIssues = async (filter = 'assignMe') => {
     setLoading(true);
-
     try {
       const snapRef = await firestore().doc(`users/${user?.uid}`).get();
       const userRef = snapRef.ref;
@@ -74,6 +101,9 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
       const snapshot = await query.get();
       const userTasks = [];
       snapshot.forEach(doc => {
+        const assignTo = doc.data().assignTo;
+        getUserAssignTo(assignTo.id);
+
         userTasks.push({
           id: doc.id,
           ...doc.data(),
@@ -99,6 +129,11 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
     });
   }
 
+  /**
+   * Delete an issue
+   * @param item
+   * @returns
+   */
   const handleDeleteIssue = (item: Issue) => {
     if (filter === 'assignMe') {
       return Alert.alert(
@@ -125,6 +160,7 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
     Alert.alert('Informations', 'Votre ticket a bien été supprimé');
     loadIssues();
   };
+
   if (loading)
     return (
       <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
@@ -170,8 +206,7 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
                     </TouchableOpacity>
                   </View>
                 </View>
-
-                {/* Filter */}
+                {/* Filter show issue */}
                 <View style={styles.buttonsContainer}>
                   <View style={[{flex: 1}]}>
                     <TouchableOpacity
@@ -239,6 +274,9 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
         renderItem={({item}) => {
           const t = item?.date;
           const isssueDate = moment(t?.toDate?.()).format('L à HH:mm');
+          const userAssigned = userAssignToIssue.filter(
+            u => u.uid === item.assignTo.id,
+          )?.[0];
           return (
             <View style={styles.containerItem}>
               <TouchableOpacity
@@ -267,6 +305,24 @@ const ProfilView: FC<ChildProps> = ({navigation}): ReactElement => {
                   <Text style={styles.descriptionTitle}>Description :</Text>
                   <Text style={styles.descriptionText}>{item.request}</Text>
                 </View>
+                {!!userAssigned && (
+                  <>
+                    <View
+                      style={{
+                        height: 1,
+                        width: '100%',
+                        backgroundColor: colorTheme.new,
+                        marginVertical: 8,
+                      }}
+                    />
+                    <View style={{flexDirection: 'row'}}>
+                      <Text style={{fontSize: 12}}>Assigner à :</Text>
+                      <Text style={{fontSize: 12}}>
+                        {userAssigned.nickname}
+                      </Text>
+                    </View>
+                  </>
+                )}
               </TouchableOpacity>
             </View>
           );

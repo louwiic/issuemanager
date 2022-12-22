@@ -43,11 +43,10 @@ const App = () => {
 
   const theme = {
     ...DefaultTheme,
-
+    roundness: 10,
     colors: {
       ...DefaultTheme.colors,
       primary: colorTheme.main,
-      background: 'white',
     },
   };
 

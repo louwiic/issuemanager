@@ -4,8 +4,8 @@ import colorTheme from '../config/theme';
 
 interface ModalProps {
   modalVisible: Boolean;
-  setModalVisible: () => void;
-  children: React.Node;
+  setModalVisible: (value: Boolean) => void;
+  children: React.ReactNode;
 }
 
 const ModalPicker: FC<ModalProps> = ({

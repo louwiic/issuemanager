@@ -115,38 +115,35 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
 
   const loadIssues = () => {
     const docRef = firestore().collection('issues');
-    const subscriber = docRef
-      //.orderBy('date', 'desc')
-      //.limit(4)
-      .onSnapshot(querySnapshot => {
-        const issues = [];
-        querySnapshot.forEach(issueDoc => {
-          // get issues data
-          const issueData = issueDoc.data();
+    const subscriber = docRef.onSnapshot(querySnapshot => {
+      const issues = [];
+      querySnapshot.forEach(issueDoc => {
+        // get issues data
+        const issueData = issueDoc.data();
 
-          // get ref user assigned to issue
-          const assignTo = issueData.assignTo;
+        // get ref user assigned to issue
+        const assignTo = issueData.assignTo;
 
-          // filters user with id
-          const usersRef = firestore()
-            .collection('users')
-            .where('uid', '==', assignTo.id);
+        // filters user with id
+        const usersRef = firestore()
+          .collection('users')
+          .where('uid', '==', assignTo.id);
 
-          // get user info affected to issue
-          usersRef.get().then(querySnapshot => {
-            setLoading(false);
-            querySnapshot.forEach(userDoc => {
-              const userData = userDoc.data();
-              issues.push({
-                ...issueDoc.data(),
-                key: issueDoc.id,
-                ...{userAssigned: userData},
-              });
-              setIssuesList(issues);
+        // get user info affected to issue
+        usersRef.get().then(querySnapshot => {
+          setLoading(false);
+          querySnapshot.forEach(userDoc => {
+            const userData = userDoc.data();
+            issues.push({
+              ...issueDoc.data(),
+              key: issueDoc.id,
+              ...{userAssigned: userData},
             });
+            setIssuesList(issues);
           });
         });
       });
+    });
     return () => subscriber();
   };
 
@@ -180,10 +177,11 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
     return <RowListItem key={ref} issue={item} />;
   };
 
-  if (loading) {
-    return <ActivityIndicator />;
-  }
-
+  /**
+   * Search issue by ref
+   *
+   * @returns
+   */
   const handleSearch = () => {
     if (!Boolean(searchQuery)) return loadIssues();
     issuesQuery
@@ -197,10 +195,17 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
             key: documentSnapshot.id,
           });
         });
-        console.log(' *** searchResults ***', searchResults);
         setIssuesList(searchResults);
       });
   };
+
+  if (loading) {
+    return (
+      <View style={{flex: 1, alignItems: 'center'}}>
+        <ActivityIndicator size={10} color={colorTheme.active} />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -269,25 +274,6 @@ const HomeView: FC<ChildProps> = ({navigation}): ReactElement => {
             }}
             keyExtractor={item => item.id}
           />
-          <View style={{marginTop: 20, width: 120}}>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => {
-                //
-              }}
-              style={{
-                height: 30,
-                padding: 8,
-                backgroundColor: colorTheme.main,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 4,
-              }}>
-              <Text style={{fontSize: 14, color: colorTheme.white}}>
-                Voir plus
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
       {/*  add issue button */}

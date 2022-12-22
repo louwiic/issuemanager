@@ -8,18 +8,23 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import React, {FC, ReactElement, useContext, useEffect, useState} from 'react';
 import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {Avatar, Button, HelperText, TextInput} from 'react-native-paper';
-import colorTheme from '../config/theme';
+import colorTheme from '../../config/theme';
 import firestore from '@react-native-firebase/firestore';
 import {Picker} from '@react-native-picker/picker';
 import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
-import {UserContext} from '../context/UserContext';
+import {UserContext} from '../../context/UserContext';
 import BottomSheet from '@gorhom/bottom-sheet';
-import MyBottomSheet from '../components/MyBottomSheet';
+import MyBottomSheet from '../../components/MyBottomSheet';
 import {Controller, Resolver, useForm} from 'react-hook-form';
-import ModalPicker from '../components/ModalPicker';
-import {Issue} from '../type/IssueType';
-import {priorityTypeLabel, statusTypeLabel} from '../helpers/helpers';
+import ModalPicker from '../../components/ModalPicker';
+import {Issue} from '../../type/IssueType';
+import {priorityTypeLabel, statusTypeLabel} from '../../helpers/helpers';
 
+/**
+ * Picker component
+ * @param param0
+ * @returns
+ */
 const PickerComponent = ({type, selected, items}) => {
   return (
     <View>
@@ -40,27 +45,6 @@ const PickerComponent = ({type, selected, items}) => {
       </Picker>
     </View>
   );
-};
-
-interface UserContextProps {
-  user: FirebaseAuthTypes.User;
-  setUser: (newValue: object) => void;
-}
-
-type IssueProps = {
-  isConnected?: boolean;
-};
-
-type BottomSheetValues = {
-  label: string;
-  value: string;
-};
-
-type FormValues = {
-  status: BottomSheetValues;
-  priority: BottomSheetValues;
-  description: string;
-  users: object;
 };
 
 const resolver: Resolver<FormValues> = async values => {
@@ -98,10 +82,36 @@ const resolver: Resolver<FormValues> = async values => {
   };
 };
 
+interface UserContextProps {
+  user: FirebaseAuthTypes.User;
+  setUser: (newValue: object) => void;
+}
+
+type BottomSheetValues = {
+  label: string;
+  value: string;
+};
+
+type FormValues = {
+  status: BottomSheetValues;
+  priority: BottomSheetValues;
+  description: string;
+  users: {
+    label: string;
+    value: string;
+  };
+};
+
+type IssueProps = {
+  isConnected?: boolean;
+  issue: Issue;
+  cb: () => void;
+};
+
 const AddIssueView: FC<IssueProps> = ({}): ReactElement => {
   const navigation = useNavigation();
   const route = useRoute();
-  const {issue, cb}: {issue: Issue; cb: () => void} = route?.params || {};
+  const {issue, cb} = route?.params as IssueProps;
   const {user, setUser} = useContext<UserContextProps>(UserContext);
   const [userList, setUserList] = useState<BottomSheetValues[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -201,22 +211,14 @@ const AddIssueView: FC<IssueProps> = ({}): ReactElement => {
     });
   }
 
-  /*  useEffect(() => {
-    const fetchUsers = async () => {};
-
-    fetchUsers();
-  }, []); */
-
   const generateFakeRef = () => {
     const characters = '123456789';
     let fakeRef = '';
-
     for (let i = 0; i < 3; i++) {
       fakeRef += characters.charAt(
         Math.floor(Math.random() * characters.length),
       );
     }
-
     return fakeRef;
   };
 
@@ -267,8 +269,6 @@ const AddIssueView: FC<IssueProps> = ({}): ReactElement => {
             label="Status"
             value={statusValue?.label}
             onPressIn={() => setModalVisible1(true)}
-
-            //onBlur={() => bottomSheetRef1.current.close()}
           />
           {errors.status && (
             <HelperText type="error" visible={errors.status}>
